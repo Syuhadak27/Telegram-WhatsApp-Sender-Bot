@@ -12,10 +12,10 @@ function doPost(e) {
     var text = contents.message.text;
 
     if (text === '/start') {
-      var response = sendText(chatId, 'Masukkan nomor telepon WhatsApp yang dimaksud dengan format biasa (085xxxxxxxxxx) atau dengan kode negara (+6285xxxxxxxxxx)');
-      var responseId = JSON.parse(response.getContentText()).result.message_id;
-      Utilities.sleep(4000);
-      deleteMessage(chatId, responseId);
+      var responseText = 'Masukkan nomor telepon WhatsApp yang dimaksud dengan format biasa (085xxxxxxxxxx) atau dengan kode negara (+6285xxxxxxxxxx)';
+      var buttonText = '📜 Source Code';
+      var buttonUrl = 'https://github.com/Syuhadak27/Telegram-WhatsApp-Sender-Bot';
+      sendMessage(chatId, responseText, buttonText, buttonUrl);
     } else if (text.match(/^0\d+$/)) {
       var phoneNumber = '62' + text.substring(1);
       var newText = 'Oke sekarang anda bisa mengirim pesan via whatsapp tanpa save nomor dengan klik tombol berikut:';
