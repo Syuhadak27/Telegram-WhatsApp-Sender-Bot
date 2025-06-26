@@ -1,5 +1,9 @@
 import { BOT_TOKEN, CHANNEL_ID, IMAGE_URL, API_URL } from './config.js';
 
+function getBilingual(idText, enText) {
+  return `${idText}\n\n━━━━━━━━━━━━━━\n\n${enText}`;
+}
+
 async function handleRequest(request) {
   const url = new URL(request.url);
 
@@ -23,7 +27,6 @@ async function handleRequest(request) {
     const username = msg.from.username ? "@" + msg.from.username : "(tidak ada username)";
     const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
 
-    // ✅ Log semua pesan ke channel jika CHANNEL_ID diisi
     if (CHANNEL_ID) {
       const caption = `👤 User: ${username}\n📝 Pesan: ${text}\n🕒 Waktu: ${now}`;
       if (IMAGE_URL) {
@@ -33,34 +36,56 @@ async function handleRequest(request) {
       }
     }
 
-    // ✅ /start command
     if (text.startsWith('/start')) {
-      const welcomeText = `🔥 Selamat datang, <b>${fullName}</b> (${username})! 🔥\n\n` +
-        `🚀 <b>Siap untuk mengirim pesan WhatsApp tanpa ribet?</b> Cukup masukkan nomor telepon dalam format berikut:\n\n` +
-        `✅ 085XXXXXXXXXX (format biasa)\n` +
-        `✅ +6285XXXXXXXXXX (dengan kode negara)\n\n` +
-        `💡 <b>Mau lihat kode sumbernya? Klik tombol di bawah!</b>`;
+      const welcomeText = getBilingual(
+        `🔥 Selamat datang, <b>${fullName}</b> (${username})! 🔥
+🚀 <b>Siap untuk mengirim pesan WhatsApp tanpa ribet?</b>
+Cukup masukkan nomor telepon dalam format berikut:
 
-      await sendMessage(chatId, welcomeText, '📜 Lihat Source Code', 'https://github.com/Syuhadak27/Telegram-WhatsApp-Sender-Bot', true);
+✅ 085XXXXXXXXXX (format biasa)
+✅ +6285XXXXXXXXXX (dengan kode negara)
+
+💡 <b>Mau lihat kode sumbernya? Klik tombol di bawah!</b>`,
+        `🔥 Welcome, <b>${fullName}</b> (${username})! 🔥
+🚀 <b>Ready to send WhatsApp messages without saving contacts?</b>
+Just enter the phone number in the following format:
+
+✅ 085XXXXXXXXXX (normal format)
+✅ +6285XXXXXXXXXX (with country code)
+
+💡 <b>Want to see the source code? Click the button below!</b>`
+      );
+
+      await sendMessage(
+        chatId,
+        welcomeText,
+        '📜 Source Code',
+        'https://github.com/Syuhadak27/Telegram-WhatsApp-Sender-Bot',
+        true
+      );
       await deleteMessage(chatId, msgId);
       return new Response('ok');
     }
 
-    // ✅ Cek apakah input nomor telepon valid
     const cleaned = text.replace(/[^+\d]/g, '');
     if (/^\+?\d{9,15}$/.test(cleaned)) {
       const waLink = `https://wa.me/${cleaned.replace(/^0/, '62')}`;
       const label = cleaned.replace(/^0/, '62');
 
       await sendButton(chatId,
-        `Oke sekarang anda bisa mengirim pesan via WhatsApp tanpa simpan nomor dengan klik tombol berikut:`,
+        getBilingual(
+          `✅ Oke! Sekarang anda bisa mengirim pesan via WhatsApp tanpa menyimpan nomor. Klik tombol di bawah.`,
+          `✅ Great! Now you can send a WhatsApp message without saving the number. Click the button below.`
+        ),
         waLink,
         `📲 ${label}`
       );
 
       await deleteMessageAfter(chatId, msgId, 4);
     } else {
-      const errorRes = await sendMessage(chatId, 'Masukkan nomor saja.');
+      const errorRes = await sendMessage(chatId,
+        getBilingual('⚠️ Masukkan nomor saja.', '⚠️ Numbers only, please.')
+      );
       const botMsgId = errorRes.result.message_id;
       await deleteMessageAfterPair(chatId, msgId, botMsgId, 4);
     }
@@ -70,8 +95,6 @@ async function handleRequest(request) {
 
   return new Response('OK');
 }
-
-// === UTILITAS ===
 
 async function sendMessage(chatId, text, buttonText = null, buttonUrl = null, parseHTML = false) {
   const body = {
