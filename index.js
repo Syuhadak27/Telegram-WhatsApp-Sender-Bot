@@ -67,19 +67,24 @@ Just enter the phone number in the following format:
       return new Response('ok');
     }
 
-    const cleaned = text.replace(/[^+\d]/g, '');
-    if (/^\+?\d{9,15}$/.test(cleaned)) {
-      const waLink = `https://wa.me/${cleaned.replace(/^0/, '62')}`;
-      const label = cleaned.replace(/^0/, '62');
+    const lines = text.trim().split('\n');
+const firstLine = lines[0]?.trim() || '';
+const secondLine = lines[1]?.trim() || '';
+const cleaned = firstLine.replace(/[^+\d]/g, '');
 
-      await sendButton(chatId,
-        getBilingual(
-          `✅ Oke! Sekarang anda bisa mengirim pesan via WhatsApp tanpa menyimpan nomor. Klik tombol di bawah.`,
-          `✅ Great! Now you can send a WhatsApp message without saving the number. Click the button below.`
-        ),
-        waLink,
-        `📲 ${label}`
-      );
+if (/^\+?\d{9,15}$/.test(cleaned)) {
+  const waLink = `https://wa.me/${cleaned.replace(/^0/, '62')}`;
+  const label = cleaned.replace(/^0/, '62');
+  const buttonLabel = secondLine !== '' ? secondLine : `📲 ${label}`;
+
+  await sendButton(chatId,
+    getBilingual(
+      `✅ Oke! Sekarang anda bisa mengirim pesan via WhatsApp tanpa menyimpan nomor. Klik tombol di bawah.`,
+      `✅ Great! Now you can send a WhatsApp message without saving the number. Click the button below.`
+    ),
+    waLink,
+    buttonLabel
+  );
 
       await deleteMessageAfter(chatId, msgId, 4);
     } else {
